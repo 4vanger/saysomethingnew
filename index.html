@@ -1,0 +1,54 @@
+<html>
+<head>
+	<title>Try to say something new</title>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+</head>
+<body>
+<textarea id="tweet" rows="4" cols="60"></textarea>
+<button onclick="didISaidComethingNew()">Did I said something new?</button>
+<script type="text/javascript">
+function didISaidComethingNew(nextPageUrl){
+	var phrase = $("#tweet").val();
+	if(nextPageUrl == null){
+		nextPageUrl = "http://search.twitter.com/search.json?rpp=100&q=" + encodeURIComponent('"' + phrase + '"')
+	}
+
+	jQuery.ajax({
+		dataType: "jsonp",
+		url: nextPageUrl,
+		success: function(json) {
+			console.log("success", json)
+			var re = new RegExp("^" + phrase.replace(/([.*+?^${}()|[\]\/\\])/g, '\\$1') + "$");
+			var found = false;
+			for(var ii = 0; ii < json.results.length; ii++){
+				var tweet = json.results[ii];
+				if(re.test(tweet.text)){
+					displayTweet(tweet);
+					found = true;
+					break;
+				}
+			}
+
+			if(!found){
+				if(json.next_page != null){
+					didISaidComethingNew("http://search.twitter.com/search.json" + json.next_page)
+				} else {
+					alert("hurray! you are not stupid!");
+				}
+			}
+
+		},
+		error: function(xhr, textStatus, errorThrown){
+			console.log(xhr, textStatus, errorThrown)
+		}
+	});
+}
+
+function displayTweet(tweet){
+	console.log("found", tweet);
+	alert("!!!")
+}
+
+</script>
+</body>
+</html>
